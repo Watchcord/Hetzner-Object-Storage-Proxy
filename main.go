@@ -65,8 +65,16 @@ func main() {
 			return
 		}
 
-		targetHost := bucket + "." + region + ".your-objectstorage.com"
-		targetURL := "https://" + targetHost + "/" + key
+		var targetHost, targetURL string
+		if isPresignedRequest(c) {
+			targetHost = region + ".your-objectstorage.com"
+			targetURL = "https://" + targetHost + "/" + bucket + "/" + key
+			log.Printf("Presigned URL: %s", targetURL)
+		} else {
+			targetHost = bucket + "." + region + ".your-objectstorage.com"
+			targetURL = "https://" + targetHost + "/" + key
+			log.Printf("Public URL: %s", targetURL)
+		}
 
 		req, err := http.NewRequest(c.Request.Method, targetURL, c.Request.Body)
 		if err != nil {
@@ -122,4 +130,9 @@ func clientIP(c *gin.Context) string {
 		return c.ClientIP()
 	}
 	return ip
+}
+
+func isPresignedRequest(c *gin.Context) bool {
+	q := c.Request.URL.Query()
+	return q.Has("X-Amz-Algorithm") && q.Has("X-Amz-Credential") && q.Has("X-Amz-Signature")
 }
