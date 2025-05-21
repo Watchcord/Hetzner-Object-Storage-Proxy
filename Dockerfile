@@ -1,10 +1,14 @@
-FROM golang:1.22 as build
+FROM golang:1.22 AS build
 WORKDIR /app
 COPY . .
-RUN go build -o /server .
 
-FROM scratch
-COPY --from=build /server /server
+ARG TARGETOS
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /server .
+
+FROM gcr.io/distroless/static:nonroot
 ENV GIN_MODE=release
+ENV PORT=3000
+COPY --from=build /server /server
 EXPOSE 3000
 CMD ["/server"]
