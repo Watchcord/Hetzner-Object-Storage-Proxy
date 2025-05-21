@@ -32,6 +32,11 @@ func main() {
 		c.Status(http.StatusNoContent)
 	})
 
+	// For healthcheck
+	r.GET("/health", func(c *gin.Context) {
+		c.String(200, "OK")
+	})
+
 	// Proxy to https://<region>.your-objectstorage.com/
 	r.Any("/", func(c *gin.Context) {
 		targetHost := region + ".your-objectstorage.com"
