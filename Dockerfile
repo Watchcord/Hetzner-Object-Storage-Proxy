@@ -8,6 +8,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /server .
 
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache curl
 
 ENV GIN_MODE=release
 ENV PORT=3000
