@@ -33,7 +33,7 @@ func main() {
 	})
 
 	// For healthcheck
-	r.GET("/health", func(c *gin.Context) {
+	r.GET("/_internal/health", func(c *gin.Context) {
 		c.String(200, "OK")
 	})
 
