@@ -99,6 +99,7 @@ func applyForwardingHeaders(req *http.Request, c *gin.Context, targetHost string
 func proxyAndRespond(c *gin.Context, req *http.Request) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Printf("Proxy error: %v", err)
 		c.String(http.StatusBadGateway, "Proxy error: "+err.Error())
 		return
 	}
