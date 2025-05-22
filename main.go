@@ -25,6 +25,7 @@ func main() {
 		port = "3000"
 	}
 
+	log.SetOutput(os.Stdout)
 	r := gin.Default()
 
 	// Ignore favicon requests
