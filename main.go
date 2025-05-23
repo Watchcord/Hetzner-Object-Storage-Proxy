@@ -25,6 +25,11 @@ func main() {
 		port = "3000"
 	}
 
+	cache := os.Getenv("CACHE_AGE")
+	if cache == "" {
+		cache = "2629800"
+	}
+
 	log.SetOutput(os.Stdout)
 	r := gin.Default()
 
@@ -87,7 +92,24 @@ func main() {
 		applyForwardingHeaders(req, c, targetHost)
 		req.URL.RawQuery = c.Request.URL.RawQuery
 
-		proxyAndRespond(c, req)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Printf("Proxy error: %v", err)
+			c.String(http.StatusBadGateway, "Proxy error: "+err.Error())
+			return
+		}
+		defer resp.Body.Close()
+
+		copyHeaders(c.Writer.Header(), resp.Header)
+
+		if isPresignedRequest(c) {
+			c.Writer.Header().Set("Cache-Control", "private, no-store, no-cache, must-revalidate")
+		} else {
+			c.Writer.Header().Set("Cache-Control", "public, max-age="+cache)
+		}
+
+		c.Status(resp.StatusCode)
+		io.Copy(c.Writer, resp.Body)
 	})
 
 	log.Printf("Proxy server listening on :%s\n", port)
